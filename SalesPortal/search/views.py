@@ -58,7 +58,7 @@ def get_item(dictionary, key):
 	return dictionary.get(key)
 
 @register.simple_tag(takes_context=True)
-def url_replace(context, value, field):	
+def url_replace(context, value, field):
 	query = context['request'].GET.copy().urlencode()
 	params = query.split('&')
 	url = ""
@@ -89,7 +89,7 @@ def result_view(request):
 	ratio = request.GET.getlist('ratio')
 	purchasing_power = request.GET.getlist('purchasing_power')
 	sort_by = request.GET.getlist('sort_by')
-	
+
 	if ("Pan India" in location) or (len(location) == 0):
 		filter_location = LOCATION
 	else:
@@ -135,14 +135,14 @@ def result_view(request):
 	filter_ratio = [GENDER_RATIO_DICT[i] for i in filter_ratio]
 	filter_date = [AVAILABLE_DATES_DICT[i] for i in filter_date]
 	filter_purchasing_power = [PURCHASING_POWER_DICT[i] for i in filter_purchasing_power]
-	
+
 	results = College.objects.filter(location__in=filter_location, tier__in=filter_tier,
 		gender_ratio__in=filter_ratio, purchasing_power__in=filter_purchasing_power)
 
 	# Integer range select query filter
-	if (len(total_students) == 0):	
+	if (len(total_students) == 0):
 		results = results
-	elif (total_students[0] == TOTAL_STUDENTS[0]): 
+	elif (total_students[0] == TOTAL_STUDENTS[0]):
 		results = results.filter(total_students__lt=1000)
 	elif (total_students[0] == TOTAL_STUDENTS[1]):
 		results = results.filter(total_students__lt=3000)
@@ -158,14 +158,15 @@ def result_view(request):
 	else: sort_by = sort_by[0]
 
 	if (sort_by == 'Name') : results = results.order_by('name')
-	elif (sort_by == 'Location') : results = results.order_by('location')
+	elif (sort_by == 'Location') :
+	    results = sorted(results, key=lambda n: (n.location[0], int(n.location[1:])))
 	elif (sort_by == 'Students') : results = results.order_by('total_students')
 
 	# Multi select query filter
 	final_results = []
 	for result in results:
-		if ((sum([i in result.stream for i in filter_stream]) > 0) and 
-			(sum([i in result.available_dates for i in filter_date]) > 0)): 
+		if ((sum([i in result.stream for i in filter_stream]) > 0) and
+			(sum([i in result.available_dates for i in filter_date]) > 0)):
 			final_results.append(result)
 
 	page_number = request.GET.get('page', 1)
@@ -177,4 +178,4 @@ def result_view(request):
 	except EmptyPage:
 		page = paginator.page(paginator.num_pages)
 	print(len(page))
-	return render(request, 'webpage/results.html', {'sort_by' : sort_by, 'colleges': page, 'location_fdict' : LOCATION_FDICT, 'tier_fdict' : TIER_FDICT, 'gender_ratio_fdict' : GENDER_RATIO_FDICT, 'purchasing_power_fdict' : PURCHASING_POWER_FDICT})	
+	return render(request, 'webpage/results.html', {'sort_by' : sort_by, 'colleges': page, 'location_fdict' : LOCATION_FDICT, 'tier_fdict' : TIER_FDICT, 'gender_ratio_fdict' : GENDER_RATIO_FDICT, 'purchasing_power_fdict' : PURCHASING_POWER_FDICT})

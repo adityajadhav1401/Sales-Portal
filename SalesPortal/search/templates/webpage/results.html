@@ -63,7 +63,7 @@
 				</div>
 				<div class="col-sm-6" style="padding:5px 15px 5px 15px">
 					<p style="font-weight: bolder; font-size: 20px; margin-bottom: 0px;">{{college.name}}</p>
-					<p style="font-size: 16px; margin-bottom: 0px;">{{college.address}}</p>
+                    <p style="font-size: 16px; margin-bottom: 0px;">{{college.address}}, {{location_fdict|get_item:college.location}}</p>
 					<font style="font-size: 14px;">
 					<ul style="list-style-type:none; padding-left: 0px;">
 						<li><i class="material-icons" style="position: relative; top: 6px; padding-right: 5px; right: 4px;">face</i>{{college.total_students}} Eyeballs</li>
@@ -90,20 +90,20 @@
 				<a class="btn-primary btn" href="/result/?{% url_replace colleges.previous_page_number 'page' %}" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;">LAST</a>
 			{% else %}
 				<a class="btn-primary btn" href="#" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;" disabled='disabled'>LAST</a>
-			{% endif %}	
+			{% endif %}
 		</div>
 		<div class="col-sm-6" align="left" style="float: right;">
 			{% if colleges.has_next %}
 				<a class="btn-primary btn" href="/result/?{% url_replace colleges.next_page_number 'page' %}" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;">NEXT</a>
 			{% else %}
 				<a class="btn-primary btn" href="#" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;" disabled='disabled'>NEXT</a>
-			{% endif %}	
+			{% endif %}
 
 		</div>
-		
+
 	</div>
 
-{% endblock %}	
+{% endblock %}
 </div>
 </div>
 </body>
