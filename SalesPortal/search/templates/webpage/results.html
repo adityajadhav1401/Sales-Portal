@@ -1,0 +1,110 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Search Results</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- Icons -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"> <!-- Base UI -->
+
+</head>
+<body style="font-family: 'verdana'; background-color: #FDEDEC" >
+<div class="col-sm-8 col-sm-offset-2" style="border-radius: 20px; background-color: #EAF2F8; padding: 40px; margin-top: 20px; margin-bottom: 20px;">
+<div class="col-sm-12" style="border-radius: 20px; background-color: #fff; padding: 20px;">
+	<div class="col-sm-12 row" style="margin:0px; padding:0px">
+		<h2 style="font-weight: bolder; margin-left: 20px; color: #444; float: left;">COLLEGES</h2>
+		<div class="form-group" style="float: right; padding: 20px 20px 10px 20px; min-width: 150px;">
+	        <select class="selectpicker" data-width="100%" data-style="btn-white" name="sort_by" onchange="location = this.value;">
+	          {% if sort_by == "Name" %}
+	          	<option selected="selected" value="/result/?{% url_replace 'Name' 'sort_by' %}">Name</option>
+	          {% else %}
+	          	<option value="/result/?{% url_replace 'Name' 'sort_by' %}">Name</option>
+	          {% endif %}
+	          {% if sort_by == "Location" %}
+	          	<option selected=selected value="/result/?{% url_replace 'Location' 'sort_by' %}">Location</option>
+	          {% else %}
+	          	<option value="/result/?{% url_replace 'Location' 'sort_by' %}">Location</option>
+	          {% endif %}
+	          {% if sort_by == "Students" %}
+	          	<option selected="selected" value="/result/?{% url_replace 'Students' 'sort_by' %}">Students</option>
+	          {% else %}
+	          	<option value="/result/?{% url_replace 'Students' 'sort_by' %}">Students</option>
+	          {% endif %}
+	        </select>
+		</div>
+	</div>
+
+{% block content %}
+  	<div id="college-container">
+  		{% if colleges|length == 0 %}
+  			<div class="col-sm-12" style="padding: 10px;">
+				<div class="col-sm-6" style="padding:10px 15px 10px 15px;">
+					<img src="../photos/opps.jpg" style="position: relative; width:100%; border-radius: 20px;">
+					<div style="position:absolute;background-color:#E91E63;top:30px;left:-5px;padding:5px;color:white;font-weight:bolder;border-radius:5px;">Error</div>
+				</div>
+				<div class="col-sm-6" style="padding:5px 15px 5px 15px">
+					<p style="font-weight: bolder; font-size: 20px; margin-bottom: 0px;">Opps! We couldn't find it!</p>
+					<p style="font-size: 16px; margin-bottom: 0px;">Please come back later to check if we are able to find the college you are looking for. Sorry for the inconvinience.</p>
+				</div>
+			</div>
+  		{% endif %}
+		{% for college in colleges %}
+			<div class="col-sm-12" style="padding: 10px;">
+				<div class="col-sm-6" style="padding:10px 15px 10px 15px;">
+					<img src="../{{college.image}}" style="position: relative; width:100%; border-radius: 20px;">
+					<div style="position:absolute;background-color:#E91E63;top:30px;left:-5px;padding:5px;color:white;font-weight:bolder;border-radius:5px;">Best Match</div>
+				</div>
+				<div class="col-sm-6" style="padding:5px 15px 5px 15px">
+					<p style="font-weight: bolder; font-size: 20px; margin-bottom: 0px;">{{college.name}}</p>
+					<p style="font-size: 16px; margin-bottom: 0px;">{{college.address}}</p>
+					<font style="font-size: 14px;">
+					<ul style="list-style-type:none; padding-left: 0px;">
+						<li><i class="material-icons" style="position: relative; top: 6px; padding-right: 5px; right: 4px;">face</i>{{college.total_students}} Eyeballs</li>
+						<li><i class="material-icons" style="position: relative; top: 6px; padding-right: 5px; right: 4px;">school</i>{{college.stream}}</li>
+						<li><i class="material-icons" style="position: relative; top: 6px; padding-right: 5px; right: 4px;">star</i>{{tier_fdict|get_item:college.tier}}</li>
+						<li><i class="material-icons" style="position: relative; top: 6px; padding-right: 5px; right: 4px;">account_balance</i>{{purchasing_power_fdict|get_item:college.purchasing_power}} Purchasing Power</li>
+						<li><i class="material-icons" style="position: relative; top: 6px; padding-right: 5px; right: 4px;">wc</i>{{gender_ratio_fdict|get_item:college.gender_ratio}} Sex Ratio</li>
+					</ul>
+					</font>
+					<div class="col-sm-offset-6 col-sm-6" style="padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px;">
+						<button class="btn btn-primary" style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B;">SELECT</button>
+					</div>
+				</div>
+			</div>
+			{% if not forloop.last %}
+				<hr style="display: block; margin-top: 0.5em; margin-bottom: 0.5em; margin-left: auto; margin-right: auto; border: 1px solid #EAECEE">
+			{% endif %}
+		{% endfor %}
+	</div>
+
+	<div class="col-sm-6 col-sm-offset-3" style="padding: 10px; min-height: 50px;">
+		<div class="col-sm-6" align="right" style="float: left;">
+			{% if colleges.has_previous %}
+				<a class="btn-primary btn" href="/result/?{% url_replace colleges.previous_page_number 'page' %}" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;">LAST</a>
+			{% else %}
+				<a class="btn-primary btn" href="#" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;" disabled='disabled'>LAST</a>
+			{% endif %}	
+		</div>
+		<div class="col-sm-6" align="left" style="float: right;">
+			{% if colleges.has_next %}
+				<a class="btn-primary btn" href="/result/?{% url_replace colleges.next_page_number 'page' %}" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;">NEXT</a>
+			{% else %}
+				<a class="btn-primary btn" href="#" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;" disabled='disabled'>NEXT</a>
+			{% endif %}	
+
+		</div>
+		
+	</div>
+
+{% endblock %}	
+</div>
+</div>
+</body>
+</html>
