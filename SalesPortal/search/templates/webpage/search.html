@@ -9,7 +9,19 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
-
+  <style type="text/css">
+  input.details {
+    align-items: flex-start;
+    background-color: rgba(169, 169, 169, 0.4);
+    overflow-x: hidden;
+    overflow-y: scroll;
+    padding: 5px 10px 5px 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(169, 169, 169);
+    border-radius: 3px;
+  }
+</style>
 </head>
 
 <body style="font-family: 'verdana'; background-color: #FDEDEC;">
@@ -17,7 +29,7 @@
   <div class="col-sm-12" style="border-radius: 20px; background-color: #fff; padding: 40px;">
   <h2 style="font-weight: bolder; color: #444">SALES PORTAL</h2>
   <br>
-  <form name="_search_form_" class="form-horizontal" onsubmit="return search_form()" method="get" action="/result" style="color: #797D7F"> 
+  <form name="_search_form_" class="form-horizontal" onsubmit="return search_form()" method="get" action="/result" style="color: #797D7F"> {% csrf_token %}
     <div class="form-group">
       <label class="control-label col-sm-4" style="text-align: left;">TOTAL BUDGET</label>
       <div class="col-sm-8">
@@ -103,7 +115,7 @@
     <div class="form-group">
       <label class="control-label col-sm-4" style="text-align: left;">COLLEGE STREAM</label>
       <div class="col-sm-8">          
-       <select id="divRatings" class="selectpicker" data-width="100%" data-style="btn-white" multiple data-max-options="4" name="stream">
+       <select class="selectpicker" data-width="100%" data-style="btn-white" multiple data-max-options="4" name="stream">
           <option>Any</option>
           <option>Engineering</option>
           <option>Management</option>
@@ -141,7 +153,7 @@
     <div class="form-group">
       <label class="control-label col-sm-4" style="text-align: left;">FOCUS ON</label>
       <div class="col-sm-8">
-       <select id="divRatings" class="selectpicker" data-width="100%" data-style="btn-white" multiple data-max-options="1" name="ratio">
+       <select class="selectpicker" data-width="100%" data-style="btn-white" multiple data-max-options="1" name="ratio">
           <option>Any</option>
           <option>High female population</option>
           <option>High male population</option>
@@ -152,7 +164,7 @@
     <div class="form-group">
       <label class="control-label col-sm-4" style="text-align: left;">PURCHASING POWER</label>
       <div class="col-sm-8">          
-        <select id="divRatings" class="selectpicker" data-width="100%" data-style="btn-white" multiple data-max-options="1" name="purchasing_power">
+        <select class="selectpicker" data-width="100%" data-style="btn-white" multiple data-max-options="1" name="purchasing_power">
           <option>Very High</option>
           <option>High</option>
           <option>Medium</option>
@@ -160,15 +172,39 @@
         </select>
       </div>
     </div>
+    <br>
+    <div id="_details" class="col-sm-12" style="margin: 0px; padding: 0px;">
+      <!-- <div class="form-group">
+        <label class="control-label col-sm-4" style="text-align: left;">NAME</label>
+        <div class="col-sm-8">          
+          <input class="details" id="name" type="text" name="name" style="width: 100%;">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-4" style="text-align: left;">EMAIL</label>
+        <div class="col-sm-8">          
+          <input class="details" id="email" type="text" name="email" style="width: 100%;">
+        </div>
+      </div> -->
+    </div>
     <div class="form-group">
-      <input type="hidden" name="page" value="1">
+      <input type="hidden" class="selectpicker" name="page" value="1">
     </div>
     <div class="form-group">
       <input type="hidden" name="sort_by" value="Name">
     </div>
-    <div class="form-group">     
-      <div class="col-sm-offset-9 col-sm-3">
-        <button type="submit" class="btn btn-default" style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; color: #fff">SUBMIT</button>
+    <div class="form-group">
+      <div class="col-sm-9" style="vertical-align: center;">
+        <div class="row" style="margin:0px; padding:0px;">
+          <input type="checkbox" class="form-check-input" id="_recieve_details" onchange="load_details()">
+          <label class="form-check-label" for="_recieve_details" style="margin-left: 5px;">Recieve emails about selected colleges</label>
+        </div>
+        <div id="_alert" class="row" style="margin:0px; padding:0px; color: red;">
+          <!-- <b>Please enter your name and email.</b> -->
+        </div>
+      </div>     
+      <div class="col-sm-3">
+        <button type="submit" class="btn btn-default" style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; color: #fff; min-width: 120px;">SUBMIT</button>
       </div>
     </div>
   </form>
@@ -178,11 +214,50 @@
 <script type="text/javascript">
   function search_form(){
     var f = document.forms["_search_form_"];
-    var att = document.createAttribute("action");
-    att.value = "/result";
-    f.setAttributeNode(att);
-    f.submit();
-    return false;
+    if (document.getElementById('_recieve_details').checked) {
+      var name = f["name"].value
+      var email = f["email"].value
+      if (name == null || name == "" || email == null || email == "") {
+        document.getElementById("_alert").innerHTML = "Please enter your name and email."
+        return false;
+      }
+      else {
+        var att = document.createAttribute("action");
+        att.value = "/result";
+        f.setAttributeNode(att);
+        f.submit();
+        return false;    
+      }
+    }
+    else {
+      var att = document.createAttribute("action");
+      att.value = "/result";
+      f.setAttributeNode(att);
+      f.submit();
+      return false;
+    }
+    
+    
+  }
+  function load_details(){
+    if (document.getElementById('_recieve_details').checked) {
+      document.getElementById('_details').innerHTML = "<div class='form-group'>\
+        <label class='control-label col-sm-4' style='text-align: left;'>NAME</label>\
+        <div class='col-sm-8'>\
+          <input class='details' id='name' type='text' name='name' style='width: 100%;'>\
+        </div>\
+      </div>\
+      <div class='form-group'>\
+        <label class='control-label col-sm-4' style='text-align: left;''>EMAIL</label>\
+        <div class='col-sm-8'>\
+          <input class='details' id='email' type='text' name='email' style='width: 100%;'>\
+        </div>\
+      </div>";
+    }
+    else {
+      document.getElementById('_details').innerHTML = "";
+      document.getElementById("_alert").innerHTML = "";
+    }
   }
 </script>
 </html>

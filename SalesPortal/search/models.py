@@ -60,3 +60,11 @@ class College(models.Model):
 	def __str__(self):
 		return str(self.name)
 
+class User(models.Model):
+	name = models.CharField(max_length=500)
+	email = models.CharField(max_length=500)
+	csrf_token = models.CharField(max_length=500)
+	college = models.ForeignKey(College, on_delete=models.CASCADE)
+
+	def __str__(self):
+		return str(self.name) + ", " + self.college.name

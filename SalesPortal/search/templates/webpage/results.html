@@ -3,16 +3,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Search Results</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- Icons -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"> <!-- Base UI -->
+	<title>Search Results</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- Icons -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"> <!-- Base UI -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css"> <!-- SWAL -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script> <!-- SWAL -->
 
 </head>
 <body style="font-family: 'verdana'; background-color: #FDEDEC" >
@@ -56,7 +58,7 @@
 			</div>
   		{% endif %}
 		{% for college in colleges %}
-			<div class="col-sm-12" style="padding: 10px;">
+			<div id="_college" class="col-sm-12" style="padding: 10px;">
 				<div class="col-sm-6" style="padding:10px 15px 10px 15px;">
 					<img src="../{{college.image}}" style="position: relative; width:100%; border-radius: 20px;">
 					<div style="position:absolute;background-color:#E91E63;top:30px;left:-5px;padding:5px;color:white;font-weight:bolder;border-radius:5px;">Best Match</div>
@@ -73,9 +75,23 @@
 						<li><i class="material-icons" style="position: relative; top: 6px; padding-right: 5px; right: 4px;">wc</i>{{gender_ratio_fdict|get_item:college.gender_ratio}} Sex Ratio</li>
 					</ul>
 					</font>
-					<div class="col-sm-offset-6 col-sm-6" style="padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px;">
-						<button class="btn btn-primary" style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B;">SELECT</button>
-					</div>
+					{% if session_type == 1 %}
+						{% if college.pk in selected_list %}
+						<div id="_remove_button_div_{{college.pk}}" class="col-sm-offset-6 col-sm-6" style="padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px; display: block">
+							<button id="_remove_button" onclick="remove_college('{{college.pk}}')" class="btn btn-primary" style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#979A9A;border-color:#626567;">REMOVE</button>
+						</div>
+						<div id="_select_button_div_{{college.pk}}" class="col-sm-offset-6 col-sm-6" style="padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px; display: none;">
+							<button id="_select_button" onclick="add_college('{{college.pk}}')" class="btn btn-primary" style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B;">SELECT</button>
+						</div>
+						{% else %}
+						<div id="_remove_button_div_{{college.pk}}" class="col-sm-offset-6 col-sm-6" style="padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px; display: none;">
+							<button id="_remove_button" onclick="remove_college('{{college.pk}}')" class="btn btn-primary" style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#979A9A;border-color:#626567;">REMOVE</button>
+						</div>
+						<div id="_select_button_div_{{college.pk}}" class="col-sm-offset-6 col-sm-6" style="padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px; display: block">
+							<button id="_select_button" onclick="add_college('{{college.pk}}')" class="btn btn-primary" style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B;">SELECT</button>
+						</div>
+						{% endif %}
+					{% endif %}
 				</div>
 			</div>
 			{% if not forloop.last %}
@@ -84,27 +100,115 @@
 		{% endfor %}
 	</div>
 
-	<div class="col-sm-6 col-sm-offset-3" style="padding: 10px; min-height: 50px;">
-		<div class="col-sm-6" align="right" style="float: left;">
+	<div class="col-sm-12" style="padding: 10px; min-height: 50px; display: table; width: 100%; margin-top: 20px;">
+		<div class="col-sm-12" style="padding: 10px; min-height: 50px; display: table-row; width: 100%;">
+		<div class="col-sm-3" align="left" style="margin: 0px; padding: 0px; display: table-cell; width: 20%;">
 			{% if colleges.has_previous %}
-				<a class="btn-primary btn" href="/result/?{% url_replace colleges.previous_page_number 'page' %}" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;">LAST</a>
+				<a class="btn-primary btn" href="/result/?{% url_replace colleges.previous_page_number 'page' %}" 
+				style="width:100%;font-size:16px;font-weight:bolder;border-radius:20px;background-color:#979A9A;border-color:#626567; width: 40px;">&#8249;</a>
 			{% else %}
-				<a class="btn-primary btn" href="#" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;" disabled='disabled'>LAST</a>
+				<a class="btn-primary btn" href="#" 
+				style="width:100%;font-size:16px;font-weight:bolder;border-radius:20px;background-color:#979A9A;border-color:#626567; width: 40px;" disabled='disabled'>&#8249;</a>
 			{% endif %}
 		</div>
-		<div class="col-sm-6" align="left" style="float: right;">
+		
+		<div class="col-sm-6" align="center" style=" margin: 0px; padding: 0px; display: table-cell; width: 60%;">
+			{% if session_type == 1 %}
+			<button class="btn-primary btn" 
+			style="width:100%;font-size:20px;font-weight:bolder;border-radius:10px;background-color:#2E86C1;border-color:#21618C; max-width: 150px;" onclick="submit_list()">SUBMIT</button>
+			{% endif %}
+		</div>
+
+		<div class="col-sm-3" align="right" style="margin: 0px; padding: 0px; display: table-cell; width: 20%;">
 			{% if colleges.has_next %}
-				<a class="btn-primary btn" href="/result/?{% url_replace colleges.next_page_number 'page' %}" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;">NEXT</a>
+				<a class="btn-primary btn" href="/result/?{% url_replace colleges.next_page_number 'page' %}" 
+				style="width:100%;font-size:16px;font-weight:bolder;border-radius:20px;background-color:#979A9A;border-color:#626567; width: 40px;">&#8250;</a>
 			{% else %}
-				<a class="btn-primary btn" href="#" style="width:100%;font-size:16px;font-weight:bolder;border-radius:10px;background-color:#E91E63;border-color:#C2185B; max-width: 100px;" disabled='disabled'>NEXT</a>
+				<a class="btn-primary btn" href="#" 
+				style="width:100%;font-size:16px;font-weight:bolder;border-radius:20px;background-color:#979A9A;border-color:#626567; width: 40px;" disabled='disabled'>&#8250;</a>
 			{% endif %}
 
 		</div>
-
+		</div>
 	</div>
 
 {% endblock %}
 </div>
 </div>
+<script type="text/javascript">
+	function add_college(pk) {
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+		  if (this.readyState == 4 && this.status == 200) {
+		  	var s = "_select_button_div_"+pk;
+		  	var d = "_remove_button_div_"+pk;
+		  	document.getElementById(s).style.display = "none"
+		  	document.getElementById(d).style.display = "block"
+		  }
+		};
+		xhttp.open("GET", "/add_college/?college="+pk, true);
+		xhttp.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		xhttp.send();
+	}
+	function remove_college(pk) {
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+		  if (this.readyState == 4 && this.status == 200) {
+		  	var s = "_select_button_div_"+pk;
+		  	var d = "_remove_button_div_"+pk;
+		  	document.getElementById(s).style.display = "block"
+		  	document.getElementById(d).style.display = "none"
+		  }
+		};
+		xhttp.open("GET", "/delete_college/?college="+pk, true);
+		xhttp.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		xhttp.send();
+	}
+	function getCookie(c_name){
+	    if (document.cookie.length > 0){
+	        c_start = document.cookie.indexOf(c_name + "=");
+	        if (c_start != -1){
+	            c_start = c_start + c_name.length + 1;
+	            c_end = document.cookie.indexOf(";", c_start);
+	            if (c_end == -1) c_end = document.cookie.length;
+	            return unescape(document.cookie.substring(c_start,c_end));
+	        }
+	    }
+	    return "";
+	 }
+	function submit_list(){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+		  if (this.readyState == 4 && this.status == 200) {
+		  	var res = JSON.parse(xhttp.response);
+		  	var count = res.colleges;
+
+		  	swal({
+				title: "Are you sure you want to submit?",
+				text: "You have selected " + count + " colleges. Kindly review them before confirming.",
+				type: "info",
+				showCancelButton: true,
+				closeOnConfirm: false,
+				showLoaderOnConfirm: true
+				}, function () {
+				setTimeout(function () {
+					swal({
+						title: "Successfully submitted", 
+						text: "You will recieve details about the selected colleges via email. Cheers from our team! :)", 
+						type: "success"
+					}, function () {
+							window.location = "/search/";
+					});
+				},2000);
+			});
+
+		  }
+		};
+		xhttp.open("GET", "/get_college/", true);
+		xhttp.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+		xhttp.send();
+
+	}
+</script>
 </body>
 </html>

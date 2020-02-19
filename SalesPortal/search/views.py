@@ -1,9 +1,10 @@
 from django.shortcuts import render,redirect
-from .models import College
+from .models import College, User
 from django.views.static import serve
 from django.template.defaulttags import register
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 NORTH_INDIA = ["Uttar Pradesh", "Uttarakhand", "Punjab", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Delhi", "Chandigarh"]
 EAST_INDIA = ["Arunachal Pradesh", "Assam", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Sikkim", "Tripura"]
@@ -61,6 +62,7 @@ def get_item(dictionary, key):
 def url_replace(context, value, field):
 	query = context['request'].GET.copy().urlencode()
 	params = query.split('&')
+	if (query == ""): params = []
 	url = ""
 	for param in params:
 		val = param.split('=')
@@ -77,9 +79,30 @@ def protected_serve(request,path,document_root=None,show_indexes=False):
 
 
 def search_view(request):
+	request.session.clear()
 	return render(request, 'webpage/search.html', {})
 
 def result_view(request):
+
+	name = request.GET.getlist('name')
+	email = request.GET.getlist('email')
+	csrf_token = request.GET.getlist('csrfmiddlewaretoken')
+	if (len(name) != 0):
+		request.session['name'] = name[0]
+		request.session['email'] = email[0]
+		request.session['csrf_token'] = csrf_token[0]
+
+	if (request.session.get('name') != None):
+		name = request.session['name']
+		email = request.session['email']
+		csrf_token = request.session['csrf_token']
+		session_type = 1
+	else:
+		name = ""
+		email = ""
+		csrf_token = ""
+		session_type = 0
+
 	budget = request.GET.getlist('budget')
 	location = request.GET.getlist('location')
 	total_students = request.GET.getlist('total_students')
@@ -121,12 +144,6 @@ def result_view(request):
 
 	if ("Any" in purchasing_power) or (len(purchasing_power) == 0): filter_purchasing_power = PURCHASING_POWER
 	else: filter_purchasing_power = purchasing_power
-
-	# print("filter_location",filter_location)
-	# print("filter_stream",filter_stream)
-	# print("filter_tier",filter_tier)
-	# print("filter_ratio",filter_ratio)
-	# print("filter_date",filter_date)
 
 	# Single select query filter
 	filter_location = [LOCATION_DICT[i] for i in filter_location]
@@ -177,5 +194,50 @@ def result_view(request):
 		page = paginator.page(1)
 	except EmptyPage:
 		page = paginator.page(paginator.num_pages)
-	print(len(page))
-	return render(request, 'webpage/results.html', {'sort_by' : sort_by, 'colleges': page, 'location_fdict' : LOCATION_FDICT, 'tier_fdict' : TIER_FDICT, 'gender_ratio_fdict' : GENDER_RATIO_FDICT, 'purchasing_power_fdict' : PURCHASING_POWER_FDICT})
+	
+	selected_list = []
+	if (session_type):
+		for entry in page:
+			if len(User.objects.filter(name=name,email=email,csrf_token=csrf_token,college=entry))>0:
+				selected_list.append(entry.pk)
+
+	return render(request, 'webpage/results.html', {'name': name, 'email': email, 'session_type': session_type, 'sort_by' : sort_by, 'colleges': page, 'selected_list': selected_list, 'location_fdict' : LOCATION_FDICT, 'tier_fdict' : TIER_FDICT, 'gender_ratio_fdict' : GENDER_RATIO_FDICT, 'purchasing_power_fdict' : PURCHASING_POWER_FDICT})
+
+
+@csrf_exempt
+def add_college_view(request):
+	if (request.session.get('name')!=None):
+		name = request.session['name']
+		email = request.session['email']
+		csrf_token = request.session['csrf_token']
+		college_pk = request.GET['college']
+		college = College.objects.get(pk=college_pk)
+		User.objects.create(name=name, email=email, csrf_token=csrf_token, college=college)
+		return JsonResponse({'status': 200})
+	else:
+		return JsonResponse({'status': 404})
+
+@csrf_exempt
+def delete_college_view(request):
+	if (request.session.get('name')!=None):
+		name = request.session['name']
+		email = request.session['email']
+		csrf_token = request.session['csrf_token']
+		college_pk = request.GET['college']
+		college = College.objects.get(pk=college_pk)
+		User.objects.filter(name=name, email=email, csrf_token=csrf_token, college=college).delete()
+		return JsonResponse({'status': 200})
+	else:
+		return JsonResponse({'status': 404})
+
+
+def get_college_view(request):
+	if (request.session.get('name')!=None):
+		name = request.session['name']
+		email = request.session['email']
+		csrf_token = request.session['csrf_token']
+		colleges = User.objects.filter(name=name, email=email, csrf_token=csrf_token)
+		total = str(len(colleges))
+		return JsonResponse({'status': 200, 'colleges' : total})
+	else:
+		return JsonResponse({'status': 404})
